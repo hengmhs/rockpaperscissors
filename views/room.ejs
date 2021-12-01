@@ -14,8 +14,6 @@
     body {
       padding: 0;
       margin: 0;
-      display: flex;
-      justify-content: center;
     }
 
     #message-container {
@@ -31,29 +29,24 @@
     #message-container div:nth-child(2n) {
       background-color: #FFF;
     }
-
-    #send-container {
-      position: fixed;
-      padding-bottom: 30px;
-      bottom: 0;
-      background-color: white;
-      max-width: 1200px;
-      width: 80%;
-      display: flex;
-    }
-
+    
     #message-input {
       flex-grow: 1;
     }
   </style>
 </head>
 <body>
-  <div id="message-container"></div>
+  <h1>Room: <%= roomName %></h1>
+  <div>
+    <h2>Players Online: </h2>
+    
+  </div>
   <div>
     <button id="rock">Rock</button>
     <button id="paper">Paper</button>
     <button id="scissors">Scissors</button>
     <button id="restart">Restart</button>
   </div>
+  <div id="message-container"></div>
 </body>
 </html>

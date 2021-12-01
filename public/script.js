@@ -55,12 +55,14 @@ socket.on('chat-message', data => {
   appendMessage(`${data.name}: ${data.message}`)
 })
 
-socket.on('user-connected', name => {
-  appendMessage(`${name} connected`)
+socket.on('user-connected', data => {
+  appendMessage(`${data.name} connected`)
+  console.log(data.users)
 })
 
-socket.on('user-disconnected', name => {
-  appendMessage(`${name} disconnected`)
+socket.on('user-disconnected', data => {
+  appendMessage(`${data.name} disconnected`)
+  console.log(data.users)
 })
 
 function appendMessage(message) {

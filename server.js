@@ -23,17 +23,29 @@ app.get('/', (req, res) => {
 })
 
 app.post('/room', (req, res) => {
+  const roomNum = Math.floor(Math.random() * 10000).toString()
+  // if the room already exists, redirect to main page
+  // req.body is express middleware, gets the value from the room input form
   if (rooms[req.body.room] != null) {
     return res.redirect('/')
   }
-  rooms[req.body.room] = { users: {}, gameEnded: false }
-  res.redirect(req.body.room)
+  rooms[roomNum] = { users: {}, gameEnded: false }
+  res.redirect(roomNum)
   // Send message that new room was created
-  io.emit('room-created', req.body.room)
+  io.emit('room-created', roomNum)
+})
+
+app.post('/join', (req, res) => {
+  if (rooms[req.body.room] === null) {
+    return res.redirect('/')
+  }
+  res.redirect(req.body.room)
 })
 
 app.get('/:room', (req, res) => {
-  if (rooms[req.params.room] == null) {
+  console.log(rooms[req.params.room])
+  // room does not exist
+  if (rooms[req.params.room] === undefined) {
     return res.redirect('/')
   }
   else if (Object.keys(rooms[req.params.room].users).length == 2) {
@@ -53,7 +65,15 @@ io.on('connection', socket => {
     rooms[room].users[socket.id].name = name
     console.log("from connection " + Object.keys(rooms[room].users))
     console.log(Object.keys(rooms[room].users).length)
-    socket.to(room).broadcast.emit('user-connected', name)
+    socket.to(room).broadcast.emit('user-connected', {name: name, users: Object.keys(rooms[room].users) } )
+  })
+
+  socket.on('disconnect', () => {
+    getUserRooms(socket).forEach(room => {
+      const name = rooms[room].users[socket.id].name
+      delete rooms[room].users[socket.id]
+      socket.to(room).broadcast.emit('user-disconnected', {name: name, users: Object.keys(rooms[room].users) } )
+    })
   })
 
   socket.on('send-chat-message', (room, message) => {
@@ -104,13 +124,6 @@ io.on('connection', socket => {
       rooms[room].users[socketID].choice = null;
     }
     io.in(room).emit('chat-message', { message: "game has restarted, please make a choice", name: 'game'} )
-  })
-  
-  socket.on('disconnect', () => {
-    getUserRooms(socket).forEach(room => {
-      socket.to(room).broadcast.emit('user-disconnected', rooms[room].users[socket.id].name)
-      delete rooms[room].users[socket.id]
-    })
   })
 })
 
