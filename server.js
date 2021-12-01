@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
 })
 
 app.post('/room', (req, res) => {
-  const roomNum = Math.floor(Math.random() * 10000).toString()
+  const roomNum = Math.floor(Math.random() * 100000).toString()
   // if the room already exists, redirect to main page
   // req.body is express middleware, gets the value from the room input form
   if (rooms[req.body.room] != null) {
@@ -63,16 +63,19 @@ io.on('connection', socket => {
     socket.join(room)
     rooms[room].users[socket.id] = {name: null, choice:null}
     rooms[room].users[socket.id].name = name
-    console.log("from connection " + Object.keys(rooms[room].users))
-    console.log(Object.keys(rooms[room].users).length)
-    socket.to(room).broadcast.emit('user-connected', {name: name, users: Object.keys(rooms[room].users) } )
+    //console.log("from connection " + Object.keys(rooms[room].users))
+    //console.log(Object.keys(rooms[room].users).length)
+    const users =  getUsersInRoom(room);
+    // for everyone but emitter, use: socket.to(room).broadcast.emit('user-connected', {name: name, users: users } )
+    io.in(room).emit('user-connected', {name: name, users: users })
   })
 
   socket.on('disconnect', () => {
     getUserRooms(socket).forEach(room => {
       const name = rooms[room].users[socket.id].name
       delete rooms[room].users[socket.id]
-      socket.to(room).broadcast.emit('user-disconnected', {name: name, users: Object.keys(rooms[room].users) } )
+      const users =  getUsersInRoom(room);
+      socket.to(room).broadcast.emit('user-disconnected', {name: name, users: users } )
     })
   })
 
@@ -134,4 +137,14 @@ function getUserRooms(socket) {
     if (room.users[socket.id] != null) names.push(name)
     return names
   }, [])
+}
+
+function getUsersInRoom(room) {
+  const socketArr = Object.keys(rooms[room].users)
+  let users = []
+  for (const user of socketArr){
+    // gets username associated with the socket.id
+    users.push(rooms[room].users[user].name)
+  }
+  return users
 }

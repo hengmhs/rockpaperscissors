@@ -9,6 +9,8 @@ const paperBtn = document.getElementById('paper')
 const scissorsBtn = document.getElementById('scissors')
 const restartBtn = document.getElementById('restart')
 
+const userList = document.getElementById('user-list')
+
 // messageContainer != null because this script is shared with the index.ejs and room.ejs
 // index.ejs doesn't have a messageContainer field and hence this code won't run
 if (messageContainer != null) {
@@ -41,6 +43,7 @@ if (messageContainer != null) {
   })
 }
 
+/*
 socket.on('room-created', room => {
   const roomElement = document.createElement('div')
   roomElement.innerText = room
@@ -50,6 +53,7 @@ socket.on('room-created', room => {
   roomContainer.append(roomElement)
   roomContainer.append(roomLink)
 })
+*/
 
 socket.on('chat-message', data => {
   appendMessage(`${data.name}: ${data.message}`)
@@ -57,12 +61,24 @@ socket.on('chat-message', data => {
 
 socket.on('user-connected', data => {
   appendMessage(`${data.name} connected`)
-  console.log(data.users)
+  userList.innerHTML = ""
+  for(const user of data.users) {
+    let node = document.createElement("LI")
+    let textnode = document.createTextNode(user);         // Create a text node
+    node.appendChild(textnode);                           // Append the text to <li>
+    userList.appendChild(node);                           // Append <li> to <ul> with id="user-list" 
+  }
 })
 
 socket.on('user-disconnected', data => {
   appendMessage(`${data.name} disconnected`)
-  console.log(data.users)
+  userList.innerHTML = ""
+  for(const user of data.users) {
+    let node = document.createElement("LI")
+    let textnode = document.createTextNode(user);         // Create a text node
+    node.appendChild(textnode);                           // Append the text to <li>
+    userList.appendChild(node);                           // Append <li> to <ul> with id="user-list" 
+  }
 })
 
 function appendMessage(message) {
